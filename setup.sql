@@ -14,11 +14,4 @@ CREATE TABLE IF NOT EXISTS resultados (
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Crear tabla de usuarios (opcional)
-CREATE TABLE IF NOT EXISTS usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL UNIQUE,
-    correo VARCHAR(100),
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 
