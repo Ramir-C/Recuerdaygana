@@ -1,7 +1,7 @@
-import express from "express";
-import mysql from "mysql2/promise";
-import dotenv from "dotenv";
-import cors from "cors";
+const express = require("express");
+const mysql = require("mysql2/promise");
+const dotenv = require("dotenv");
+const cors = require("cors");
 
 dotenv.config();
 
@@ -9,7 +9,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 📌 Configuración de conexión a Railway
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
@@ -18,7 +17,7 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT
 });
 
-// ✅ Crear tabla si no existe
+// Crear tabla
 async function initDB() {
   const sql = `
     CREATE TABLE IF NOT EXISTS resultados (
@@ -35,7 +34,6 @@ async function initDB() {
 }
 initDB();
 
-// ✅ Ruta para guardar resultados
 app.post("/api/resultados", async (req, res) => {
   const { nombre, intento, tiempo, errores } = req.body;
   try {
@@ -50,7 +48,6 @@ app.post("/api/resultados", async (req, res) => {
   }
 });
 
-// ✅ Ruta para obtener todos los resultados
 app.get("/api/resultados", async (req, res) => {
   try {
     const [rows] = await pool.query("SELECT * FROM resultados ORDER BY fecha DESC");
@@ -61,7 +58,6 @@ app.get("/api/resultados", async (req, res) => {
   }
 });
 
-// Servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
