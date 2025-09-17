@@ -23,6 +23,8 @@ db.connect(err => {
         process.exit(1); // Detener la app si falla
     }
     console.log("✅ Conectado a MySQL");
+   
+    CREATE DATABASE IF NOT EXISTS railway;
 
     // Crear tabla si no existe
     const createTableQuery = `
