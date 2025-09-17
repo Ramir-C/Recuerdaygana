@@ -10,10 +10,12 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT
 });
 
-// Función para crear la tabla si no existe
+// Función para crear las tablas si no existen
 async function initDB() {
   try {
     const connection = await pool.getConnection();
+
+    // Crear tabla resultados
     await connection.query(`
       CREATE TABLE IF NOT EXISTS resultados (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -24,19 +26,21 @@ async function initDB() {
         fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    // Crear tabla si no existe
-    const createTable = `
-        CREATE TABLE IF NOT EXISTS players (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            nombre VARCHAR(100) NOT NULL,
-            intento INT,
-            tiempo INT,
-            errores INT,
-            aciertos INT,
-            fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `;
-    console.log("✅ Tabla 'resultados' lista");
+
+    // Crear tabla players
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS players (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        nombre VARCHAR(100) NOT NULL,
+        intento INT,
+        tiempo INT,
+        errores INT,
+        aciertos INT,
+        fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    console.log("✅ Tablas 'resultados' y 'players' listas");
     connection.release();
   } catch (err) {
     console.error("❌ Error al inicializar DB:", err);
