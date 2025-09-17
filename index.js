@@ -1,46 +1,76 @@
-const express = require('express');
-const mysql = require('mysql2');
-const path = require('path');
-const dotenv = require('dotenv');
+const express = require("express");
+const mysql = require("mysql2");
+const dotenv = require("dotenv");
+const path = require("path");
 
 dotenv.config();
-
 const app = express();
-app.use(express.json()); // Para recibir JSON
-app.use(express.static(path.join(__dirname, 'public')));
+const PORT = process.env.PORT || 3000;
 
-// Conexión MySQL
+// Conexión a MySQL
 const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT
 });
 
+// Intento de conexión
 db.connect(err => {
-  if (err) {
-    console.error('❌ Error al conectar a MySQL:', err);
-    return;
-  }
-  console.log('✅ Conectado a MySQL');
+    if (err) {
+        console.error("❌ Error al conectar a MySQL:", err);
+        process.exit(1); // Detener la app si falla
+    }
+    console.log("✅ Conectado a MySQL");
+
+    // Crear tabla si no existe
+    const createTableQuery = `
+        CREATE TABLE IF NOT EXISTS resultados (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nombre VARCHAR(100) NOT NULL,
+            intento INT NOT NULL,
+            tiempo FLOAT NOT NULL,
+            errores INT NOT NULL,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `;
+    db.query(createTableQuery, (err) => {
+        if (err) console.error("❌ Error al crear la tabla:", err);
+        else console.log("✅ Tabla 'resultados' lista");
+    });
 });
 
-// Endpoint para guardar los datos del juego
-app.post('/save', (req, res) => {
-  const { nombre, intento, tiempo, errores } = req.body;
-  const query = 'INSERT INTO resultados (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)';
-  db.query(query, [nombre, intento, tiempo, errores], (err, result) => {
-    if (err) {
-      console.error('Error al guardar los datos:', err);
-      return res.status(500).json({ error: 'Error al guardar los datos' });
-    }
-    res.json({ success: true });
-  });
+// Middleware
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
+
+// Guardar resultados
+app.post("/save", (req, res) => {
+    const { nombre, intento, tiempo, errores } = req.body;
+    const sql = "INSERT INTO resultados (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)";
+    db.query(sql, [nombre, intento, tiempo, errores], (err) => {
+        if (err) {
+            console.error("❌ Error al guardar los resultados:", err);
+            return res.status(500).send("Error al guardar los resultados");
+        }
+        res.send("✅ Resultado guardado");
+    });
+});
+
+// Obtener resultados
+app.get("/resultados", (req, res) => {
+    const sql = "SELECT * FROM resultados ORDER BY fecha DESC";
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("❌ Error al obtener resultados:", err);
+            return res.status(500).send("Error al obtener resultados");
+        }
+        res.json(results);
+    });
 });
 
 // Iniciar servidor
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
