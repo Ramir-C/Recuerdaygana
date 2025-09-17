@@ -24,10 +24,11 @@ db.connect(err => {
     }
     console.log("✅ Conectado a MySQL");
    
-    CREATE DATABASE IF NOT EXISTS railway;
+   
 
     // Crear tabla si no existe
     const createTableQuery = `
+     CREATE DATABASE IF NOT EXISTS railway;
         CREATE TABLE IF NOT EXISTS resultados (
             id INT AUTO_INCREMENT PRIMARY KEY,
             nombre VARCHAR(100) NOT NULL,
