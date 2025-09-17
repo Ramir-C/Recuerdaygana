@@ -1,93 +1,86 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados del Juego</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #3498db;
-            color: white;
-            margin: 0;
-            padding: 0;
-        }
-        h1 {
-            text-align: center;
-            margin-top: 20px;
-        }
-        table {
-            width: 90%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            background-color: #2980b9;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #fff;
-            text-align: center;
-        }
-        th {
-            background-color: #2c3e50;
-        }
-        tr:nth-child(even) {
-            background-color: #1f618d;
-        }
-        tr:hover {
-            background-color: #21618c;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Juego - Resultados</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #f4f4f4; }
+  </style>
 </head>
 <body>
+  <h1>Juego - Guardar y Ver Resultados</h1>
 
-    <h1>Resultados del Juego "Recuerda y Gana"</h1>
+  <button onclick="guardarResultado()">Guardar Resultado</button>
+  <button onclick="cargarResultados()">Cargar Resultados</button>
 
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Intento</th>
-                <th>Tiempo (s)</th>
-                <th>Errores</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody id="resultados-body">
-            <!-- Aquí se insertarán los resultados -->
-        </tbody>
-    </table>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Intento</th>
+        <th>Tiempo</th>
+        <th>Errores</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-resultados"></tbody>
+  </table>
 
-    <script>
-        async function fetchResultados() {
-            try {
-                const response = await fetch('/resultados');
-                const resultados = await response.json();
+  <script>
+    // 📌 Guardar un resultado de prueba
+    async function guardarResultado() {
+      const gameData = {
+        nombre: "Jugador Demo",
+        intento: Math.floor(Math.random() * 5) + 1,
+        tiempo: (Math.random() * 60).toFixed(2),
+        errores: Math.floor(Math.random() * 3)
+      };
 
-                const tbody = document.getElementById('resultados-body');
-                tbody.innerHTML = '';
+      const res = await fetch("/api/resultados", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(gameData)
+      });
 
-                resultados.forEach(r => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${r.id}</td>
-                        <td>${r.nombre}</td>
-                        <td>${r.intento}</td>
-                        <td>${r.tiempo}</td>
-                        <td>${r.errores}</td>
-                        <td>${new Date(r.fecha).toLocaleString()}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            } catch (error) {
-                console.error('Error al obtener resultados:', error);
-            }
-        }
+      const data = await res.json();
+      if (data.success) {
+        alert("✅ Resultado guardado con ID " + data.id);
+        cargarResultados(); // refrescar tabla
+      } else {
+        alert("❌ Error: " + data.error);
+      }
+    }
 
-        // Actualizar la tabla cada 5 segundos
-        fetchResultados();
-        setInterval(fetchResultados, 5000);
-    </script>
+    // 📌 Cargar resultados en la tabla
+    async function cargarResultados() {
+      const res = await fetch("/api/resultados");
+      const resultados = await res.json();
 
+      const tabla = document.getElementById("tabla-resultados");
+      tabla.innerHTML = "";
+
+      resultados.forEach(r => {
+        const fila = `
+          <tr>
+            <td>${r.id}</td>
+            <td>${r.nombre}</td>
+            <td>${r.intento}</td>
+            <td>${r.tiempo}</td>
+            <td>${r.errores}</td>
+            <td>${r.fecha}</td>
+          </tr>
+        `;
+        tabla.innerHTML += fila;
+      });
+    }
+
+    // 📌 Cargar al iniciar
+    cargarResultados();
+  </script>
 </body>
 </html>
+
