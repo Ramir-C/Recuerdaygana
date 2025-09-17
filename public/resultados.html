@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados del Juego</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #3498db;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #2980b9;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #fff;
+            text-align: center;
+        }
+        th {
+            background-color: #2c3e50;
+        }
+        tr:nth-child(even) {
+            background-color: #1f618d;
+        }
+        tr:hover {
+            background-color: #21618c;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Resultados del Juego "Recuerda y Gana"</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Intento</th>
+                <th>Tiempo (s)</th>
+                <th>Errores</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody id="resultados-body">
+            <!-- Aquí se insertarán los resultados -->
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchResultados() {
+            try {
+                const response = await fetch('/resultados');
+                const resultados = await response.json();
+
+                const tbody = document.getElementById('resultados-body');
+                tbody.innerHTML = '';
+
+                resultados.forEach(r => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${r.id}</td>
+                        <td>${r.nombre}</td>
+                        <td>${r.intento}</td>
+                        <td>${r.tiempo}</td>
+                        <td>${r.errores}</td>
+                        <td>${new Date(r.fecha).toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error al obtener resultados:', error);
+            }
+        }
+
+        // Actualizar la tabla cada 5 segundos
+        fetchResultados();
+        setInterval(fetchResultados, 5000);
+    </script>
+
+</body>
+</html>

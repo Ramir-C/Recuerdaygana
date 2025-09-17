@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuerda y Gana</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #3498db; /* Fondo azul */
+            margin: 0;
+            padding: 0;
+            color: white;
+        }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #title {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        #welcome-image {
+            width: 300px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        #instructions {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #start-button {
+            padding: 10px 20px;
+            background-color: #2ecc71; /* Botón verde */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #image-container {
+            position: relative;
+            width: 300px; /* Ajusta el ancho de la imagen */
+            height: 300px; /* Ajusta la altura de la imagen */
+            display: none; /* Ocultar hasta que se inicie el juego */
+        }
+
+        #image, #welcome-back-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: transform 1s;
+        }
+
+        #image.flipped {
+            transform: rotateY(180deg);
+        }
+
+        #welcome-back-image {
+            display: none; /* Ocultar la imagen de bienvenida en la parte trasera */
+        }
+
+        #question {
+            margin-top: 20px;
+            font-size: 24px;
+            text-align: center;
+            display: none; /* Ocultar hasta que se muestre la pregunta */
+        }
+
+        #button-container {
+            margin-top: 20px;
+            text-align: center;
+            display: none; /* Ocultar hasta que se muestre la pregunta */
+        }
+
+        #answer-yes,
+        #answer-no {
+            padding: 10px 20px;
+            background-color: #2ecc71; /* Botón verde */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+
+        #restart-button {
+            padding: 10px 20px;
+            background-color: #e74c3c; /* Botón rojo */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none; /* Ocultar hasta que se muestre el resultado */
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 24px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-container">
+        <h1 id="title">¡Observa y Gana!</h1>
+        <img id="welcome-image" src="https://cdn.glitch.global/fc386927-6a5e-4fc8-8787-2beac4099216/Imagen2.png?v=1711606381705" alt="Welcome Image">
+        <h2 id="instructions">Instrucciones: 
+          Memoriza las imágenes que aparecerán durante el juego. 
+          Después, responde a las preguntas correctamente.</h2>
+        <form id="name-form" onsubmit="saveName(event)">
+            <input type="text" id="player-name" placeholder="Ingrese su nombre" required>
+            <button type="submit">Guardar nombre de usuario</button>
+        </form>
+        <button id="start-button" onclick="startGame()" style="display: none;">Iniciar Juego</button>
+        <div id="image-container">
+            <p id="image-index" style="position: absolute; top: 10px; left: 10px; font-size: 18px; color: white;"></p>
+            <img id="image" src="https://cdn.glitch.global/fc386927-6a5e-4fc8-8787-2beac4099216/Imagen2.png?v=171160638170" alt="welcome-back-image">
+            <img id="welcome-back-image" src="https://cdn.glitch.global/fc386927-6a5e-4fc8-8787-2beac4099216/Imagen2.png?v=171160638170" alt="Welcome-Back-image">
+        </div>
+        <div id="question"></div>
+        <div id="button-container">
+            <button id="answer-yes" onclick="answerQuestion(true)">Sí</button>
+            <button id="answer-no" onclick="answerQuestion(false)">No</button>
+        </div>
+        <button id="restart-button" onclick="restartGame()">Volver a Jugar</button>
+        <div id="result"></div>
+    </div>
+
+    <audio id="correct-sound" src="https://cdn.glitch.global/6e430c3b-60be-4d4e-b53f-c8ce0fcb9707/acierto.wav?v=17116584105000"></audio>
+    <audio id="incorrect-sound" src="https://cdn.glitch.global/6e430c3b-60be-4d4e-b53f-c8ce0fcb9707/error.wav?v=1711658404858"></audio>
+
+    <script>
+        const imagesAndQuestions = [
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/0ce37b09-2eae-4ed9-8e8f-eb9a69b1c4ef.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.28.19_6fe1a40d.jpg?v=1713209426161',
+                question: '¿En la imagen anterior había 6 colores diferentes?',
+                answer: true
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/e09cc3a3-9ce8-4581-8520-57a021946361.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.09.06_0438edca.jpg?v=1713209178443',
+                question: '¿En la imagen anterior había una esfera? ',
+                answer: false
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/2bd28d2a-e399-4d02-8bd5-04412b256248.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.09.06_a9a6a97f.jpg?v=1713209260630',
+                question: '¿En la imagen había un rombo?',
+                answer: false
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/f8790676-4c9d-4b76-ab99-9dd63905bd15.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.21.36_2284ea1a.jpg?v=1713209295640',
+                question: '¿Tenía seis picos la estrella?',
+                answer: false
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/4af405b2-d7d8-4726-babc-842c5805ed5e.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.21.36_28156cf4.jpg?v=1713209339839',
+                question: '¿Acabas de ver dos cubos?',
+                answer: true
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/2d1eaa4b-5d47-450d-bcac-9f1de39d43af.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.21.36_a7fcc730.jpg?v=1713209356146',
+                question: '¿Había un triángulo en la imagen?',
+                answer: true
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/0bf1f5e7-6ee9-4b01-a097-c9c3984bbabf.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.21.36_719067ed.jpg?v=1713209374622',
+                question: '¿En la imagen, la figura más pequeña es de color rojo?',
+                answer: false
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/a46763fd-ad9c-4776-86f3-e49df12955ec.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.25.09_710db063.jpg?v=1713209400640',
+                question: '¿Había doce patas de patos?',
+                answer: true
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/65975aeb-f258-4eb8-b8aa-c752a377baec.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.09.06_b96b2ea6.jpg?v=1713209548965',
+                question: '¿Acaso viste una letra? ',
+                answer: true
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/80ac7a7c-485e-458b-93e2-21d9a2929e9d.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.33.25_5a1d8b31.jpg?v=1713209531799',
+                question: '¿Había dos imágenes?',
+                answer: false
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/d128f671-0a1d-4642-8ef5-09a2fa9e7e9d.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.33.25_2831b7ce.jpg?v=1713209472090',
+                question: '¿Acabas de ver 10 colores?',
+                answer: false
+            },
+            { 
+                imageUrl: 'https://cdn.glitch.global/c8b1ac05-54ef-478d-bd2c-3da7d96ae84e/1c79d3ee-f1db-4e7d-8d65-f0a814826a5d.Imagen%20de%20WhatsApp%202024-04-13%20a%20las%2015.09.06_50eaa480.jpg?v=1713209155426',
+                question: '¿El triángulo equilátero es rojo? ',
+                answer: false
+            },
+            // Agrega más objetos aquí
+        ];
+  let currentIndex = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+        let startTime;
+        let playerName = '';
+
+        function saveName(event) {
+            event.preventDefault();
+            playerName = document.getElementById('player-name').value.trim();
+            document.getElementById('name-form').style.display = 'none';
+            document.getElementById('start-button').style.display = 'block';
+        }
+
+        function startGame() {
+            document.getElementById('title').style.display = '';
+            document.getElementById('welcome-image').style.display = 'none';
+            document.getElementById('instructions').style.display = 'none';
+            document.getElementById('start-button').style.display = 'none';
+            document.getElementById('image-container').style.display = 'block';
+            document.getElementById('question').style.display = 'block';
+            document.getElementById('button-container').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('restart-button').style.display = 'none';
+            showNextImage();
+            startTime = new Date();
+        }
+
+        function showNextImage() {
+            if (currentIndex >= imagesAndQuestions.length) {
+                showResult();
+                return;
+            }
+
+            const imageInfo = imagesAndQuestions[currentIndex];
+            const imageElement = document.getElementById('image');
+            const welcomeBackImageElement = document.getElementById('welcome-back-image');
+
+            imageElement.src = imageInfo.imageUrl;
+            welcomeBackImageElement.src = imageInfo.imageUrl;
+
+            document.getElementById('question').innerText = '';
+            document.getElementById('answer-yes').style.display = 'none';
+            document.getElementById('answer-no').style.display = 'none';
+
+            setTimeout(() => {
+                document.getElementById('image-container').classList.add('flipped');
+                setTimeout(() => {
+                    hideCurrentImage();
+                }, 1000);
+            }, 3000);
+        }
+
+        function hideCurrentImage() {
+            document.getElementById('image').classList.add('flipped');
+            document.getElementById('welcome-back-image').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('image').src = 'https://cdn.glitch.global/fc386927-6a5e-4fc8-8787-2beac4099216/Imagen2.png?v=171160638170';
+            }, 1000);
+            setTimeout(() => {
+                showQuestion();
+            }, 1000);
+        }
+
+        function showQuestion() {
+            const currentQuestion = imagesAndQuestions[currentIndex];
+            document.getElementById('question').innerText = currentQuestion.question;
+            document.getElementById('answer-yes').style.display = 'inline-block';
+            document.getElementById('answer-no').style.display = 'inline-block';
+        }
+
+        function answerQuestion(answer) {
+            const currentQuestion = imagesAndQuestions[currentIndex];
+            if (answer === currentQuestion.answer) {
+                correctCount++;
+                playSound('correct');
+            } else {
+                incorrectCount++;
+                playSound('incorrect');
+            }
+
+            currentIndex++;
+            showNextImage();
+        }
+
+        function showResult() {
+            const endTime = new Date();
+            const timeDiff = (endTime - startTime) / 1000;
+            const resultMessage = `Respuestas correctas: ${correctCount}, Respuestas incorrectas: ${incorrectCount}, Tiempo total: ${timeDiff.toFixed(2)} segundos`;
+            document.getElementById('result').innerText = resultMessage;
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('restart-button').style.display = 'block';
+            saveData(timeDiff); // Guardar los datos del juego en la base de datos
+        }
+
+        function playSound(soundType) {
+            const sound = document.getElementById(soundType + '-sound');
+            sound.currentTime = 0;
+            sound.play();
+        }
+
+        function restartGame() {
+            currentIndex = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            document.getElementById('result').style.display = 'none';
+            startGame();
+        }
+
+        function saveData(timeDiff) {
+            const gameData = {
+                nombre: playerName,
+                intento: 1, // Puedes incrementar este número según tus necesidades
+                tiempo: timeDiff.toFixed(2),
+                errores: incorrectCount
+            };
+
+            fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(gameData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al guardar los datos');
+                }
+                console.log('Datos del juego guardados correctamente:', gameData);
+            })
+            .catch(error => {
+                console.error('Error al guardar los datos:', error);
+            });
+        }
+    </script>
+</body>
+
+</html>
