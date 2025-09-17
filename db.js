@@ -24,6 +24,18 @@ async function initDB() {
         fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    // Crear tabla si no existe
+    const createTable = `
+        CREATE TABLE IF NOT EXISTS players (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nombre VARCHAR(100) NOT NULL,
+            intento INT,
+            tiempo INT,
+            errores INT,
+            aciertos INT,
+            fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `;
     console.log("✅ Tabla 'resultados' lista");
     connection.release();
   } catch (err) {
