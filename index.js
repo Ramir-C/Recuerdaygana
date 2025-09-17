@@ -1,76 +1,46 @@
-const express = require("express");
-const mysql = require("mysql2");
-const dotenv = require("dotenv");
-const path = require("path");
+// index.js
+const express = require('express');
+const path = require('path');
+const { pool, initDB } = require('./db');
 
-dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🔹 Conexión directa a la BD railway
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME, // 👈 importante: ya selecciona la BD
-    port: process.env.DB_PORT
-});
-
-db.connect(err => {
-    if (err) {
-        console.error("❌ Error al conectar a MySQL:", err);
-        return;
-    }
-    console.log("✅ Conectado a MySQL");
-
-    // Crear tabla resultados si no existe
-    const createTable = `
-        CREATE TABLE IF NOT EXISTS resultados (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            nombre VARCHAR(100) NOT NULL,
-            intento INT NOT NULL,
-            tiempo FLOAT NOT NULL,
-            errores INT NOT NULL,
-            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    `;
-    db.query(createTable, (err) => {
-        if (err) {
-            console.error("❌ Error al crear la tabla:", err);
-        } else {
-            console.log("✅ Tabla 'resultados' lista");
-        }
-    });
-});
-
-app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Guardar resultados
-app.post("/save", (req, res) => {
-    const { nombre, intento, tiempo, errores } = req.body;
-    const sql = "INSERT INTO resultados (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)";
-    db.query(sql, [nombre, intento, tiempo, errores], (err) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send("Error al guardar los resultados");
-        }
-        res.send("✅ Resultado guardado");
-    });
+// Servir HTML desde /public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Ruta para insertar resultados
+app.post('/api/resultados', async (req, res) => {
+  const { nombre, intento, tiempo, errores } = req.body;
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO resultados (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)',
+      [nombre, intento, tiempo, errores]
+    );
+    res.json({ success: true, id: result.insertId });
+  } catch (err) {
+    console.error("❌ Error al insertar:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
-// Ver resultados
-app.get("/resultados", (req, res) => {
-    db.query("SELECT * FROM resultados ORDER BY fecha DESC", (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send("Error al obtener resultados");
-        }
-        res.json(results);
-    });
+// Ruta para consultar resultados
+app.get('/api/resultados', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM resultados ORDER BY fecha DESC');
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ Error al obtener resultados:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+// Iniciar servidor
+app.listen(PORT, async () => {
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  await initDB(); // Crear tabla si no existe
 });
 
