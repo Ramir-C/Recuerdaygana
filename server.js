@@ -1,69 +1,59 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const mysql = require('mysql2');
+const express = require("express");
+const mysql = require("mysql2");
+const bodyParser = require("body-parser");
+const path = require("path");
+
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(bodyParser.json());
-app.use(express.static('public')); // Carpeta con tu index.html o front
+app.use(express.static(path.join(__dirname, "public"))); // carpeta para el HTML
 
+// Configuración de conexión con Railway
+const db = mysql.createConnection({
+  host: process.env.MYSQLHOST || "containers-us-west-56.railway.app",
+  user: process.env.MYSQLUSER || "root",
+  password: process.env.MYSQLPASSWORD || "password",
+  database: process.env.MYSQLDATABASE || "railway",
+  port: process.env.MYSQLPORT || 3306,
+});
 
+// Conectar a la base de datos
 db.connect((err) => {
+  if (err) {
+    console.error("❌ Error al conectar a la base de datos:", err);
+    return;
+  }
+  console.log("✅ Conexión a la base de datos establecida");
+});
+
+// Ruta para guardar resultados
+app.post("/save", (req, res) => {
+  const { nombre, intento, tiempo, errores } = req.body;
+  const sql = "INSERT INTO resultados (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)";
+  db.query(sql, [nombre, intento, tiempo, errores], (err, result) => {
     if (err) {
-        console.error('❌ Error al conectar con MySQL:', err);
-        return;
+      console.error("❌ Error al guardar datos:", err);
+      return res.status(500).json({ error: "Error al guardar los datos" });
     }
-    console.log('✅ Conectado a MySQL.');
-
-    // Crear tabla si no existe
-    const createTable = `
-        CREATE TABLE IF NOT EXISTS players (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            nombre VARCHAR(100) NOT NULL,
-            intento INT,
-            tiempo INT,
-            errores INT,
-            aciertos INT,
-            fecha_hora DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    `;
-    db.query(createTable, (err) => {
-        if (err) console.error('❌ Error al crear la tabla:', err);
-        else console.log('✅ Tabla players lista.');
-    });
+    res.json({ message: "✅ Datos guardados correctamente" });
+  });
 });
 
-// Endpoint para guardar datos del jugador
-app.post('/save', (req, res) => {
-    const { nombre, intento, tiempo, errores, aciertos } = req.body;
-
-    const query = `
-        INSERT INTO players (nombre, intento, tiempo, errores, aciertos, fecha_hora)
-        VALUES (?, ?, ?, ?, ?, NOW())
-    `;
-    db.query(query, [nombre, intento, tiempo, errores, aciertos], (err, result) => {
-        if (err) {
-            console.error('❌ Error al insertar:', err);
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ id: result.insertId, message: '✅ Jugador guardado correctamente' });
-    });
+// Ruta para obtener resultados
+app.get("/resultados", (req, res) => {
+  const sql = "SELECT * FROM resultados ORDER BY fecha DESC";
+  db.query(sql, (err, rows) => {
+    if (err) {
+      console.error("❌ Error al obtener resultados:", err);
+      return res.status(500).json({ error: "Error al obtener los resultados" });
+    }
+    res.json(rows);
+  });
 });
 
-// Endpoint para obtener datos de jugadores
-app.get('/users', (req, res) => {
-    const query = `SELECT * FROM players ORDER BY fecha_hora DESC`;
-    db.query(query, (err, rows) => {
-        if (err) {
-            console.error('❌ Error al consultar:', err);
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ users: rows });
-    });
-});
-
-// Servidor
-app.listen(port, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
+// Iniciar servidor
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
 });
