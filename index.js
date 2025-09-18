@@ -17,29 +17,23 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Insertar un resultado en la BD
 // Guardar resultados del juego con cálculo automático del intento
-app.post("/resultado1", (req, res) => {
+app.post("/save", (req, res) => {
     const { nombre, tiempo, errores } = req.body;
 
-    // Buscar el último intento de este usuario
-    const selectSql = "SELECT MAX(intento) AS ultimoIntento FROM resultados1 WHERE nombre = ?";
+    // Verificar si ya existe el nombre
+    const selectSql = "SELECT intento FROM resultados1 WHERE nombre = ? ORDER BY id DESC LIMIT 1";
     db.query(selectSql, [nombre], (err, results) => {
-        if (err) {
-            console.error("❌ Error al buscar último intento:", err);
-            return res.status(500).send("Error al buscar último intento");
+        if (err) return res.status(500).send("Error al verificar el usuario");
+
+        let intento = 1; // Primer intento por defecto
+        if (results.length > 0) {
+            intento = results[0].intento + 1; // Incrementar intento si ya existe
         }
 
-        // Calcular nuevo intento
-        const nuevoIntento = (results[0].ultimoIntento || 0) + 1;
-
-        // Insertar nuevo registro
         const insertSql = "INSERT INTO resultados1 (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)";
-        db.query(insertSql, [nombre, nuevoIntento, tiempo, errores], (err2, result2) => {
-            if (err2) {
-                console.error("❌ Error al guardar resultado:", err2);
-                return res.status(500).send("Error al guardar resultado");
-            }
-
-            res.send(`✅ Resultado guardado. Intento ${nuevoIntento}`);
+        db.query(insertSql, [nombre, intento, tiempo, errores], (err, result) => {
+            if (err) return res.status(500).send("Error al guardar los resultados");
+            res.json({ success: true, id: result.insertId, intento });
         });
     });
 });
