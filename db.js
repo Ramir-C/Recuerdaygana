@@ -17,7 +17,7 @@ async function initDB() {
 
     // Crear tabla resultados
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS resultados (
+      CREATE TABLE IF NOT EXISTS resultados1 (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nombre VARCHAR(100) NOT NULL,
         intento INT NOT NULL,
@@ -29,7 +29,7 @@ async function initDB() {
 
     // Crear tabla players
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS players (
+      CREATE TABLE IF NOT EXISTS players1 (
         id INT AUTO_INCREMENT PRIMARY KEY,
         nombre VARCHAR(100) NOT NULL,
         intento INT,
@@ -40,7 +40,7 @@ async function initDB() {
       )
     `);
 
-    console.log("✅ Tablas 'resultados' y 'players' listas");
+    console.log("✅ Tablas 'resultados1' y 'players1' listas");
     connection.release();
   } catch (err) {
     console.error("❌ Error al inicializar DB:", err);
