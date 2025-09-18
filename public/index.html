@@ -319,24 +319,22 @@
         tiempo: timeDiff.toFixed(2),
         errores: incorrectCount
     };
-      
-    fetch('/resultados1', { // 👈 CAMBIO AQUÍ
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(gameData)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Error al guardar los datos');
-        }
-        console.log('✅ Datos del juego guardados correctamente:', gameData);
-    })
-    .catch(error => {
-        console.error('❌ Error al guardar los datos:', error);
-    });
-}
+    
+fetch('/resultados1', { // 👈 USAR LA RUTA CORRECTA
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(gameData)
+})
+.then(response => response.json()) // parsea la respuesta JSON
+.then(data => {
+    console.log('✅ Datos del juego guardados correctamente:', data);
+})
+.catch(error => {
+    console.error('❌ Error al guardar los datos:', error);
+});
+
 
     </script>
 </body>
