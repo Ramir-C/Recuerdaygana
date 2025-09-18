@@ -16,27 +16,34 @@ app.use(express.static(path.join(__dirname, 'public')));
 // -------------------- RUTAS --------------------
 
 // Insertar un resultado en la BD
-app.post('/resultados1', async (req, res) => {
-  const { nombre, intento, tiempo, errores } = req.body;
+// Guardar resultados del juego con cálculo automático del intento
+app.post("/resultado1", (req, res) => {
+    const { nombre, tiempo, errores } = req.body;
 
-  // Validación rápida
-  if (!nombre || intento === undefined || tiempo === undefined || errores === undefined) {
-    return res.status(400).json({ success: false, error: "Faltan datos en la petición" });
-  }
+    // Buscar el último intento de este usuario
+    const selectSql = "SELECT MAX(intento) AS ultimoIntento FROM resultados1 WHERE nombre = ?";
+    db.query(selectSql, [nombre], (err, results) => {
+        if (err) {
+            console.error("❌ Error al buscar último intento:", err);
+            return res.status(500).send("Error al buscar último intento");
+        }
 
-  try {
-    const [result] = await pool.query(
-      `INSERT INTO resultados1 (nombre, intento, tiempo, errores) 
-       VALUES (?, ?, ?, ?)`,
-      [nombre, intento, tiempo, errores]
-    );
+        // Calcular nuevo intento
+        const nuevoIntento = (results[0].ultimoIntento || 0) + 1;
 
-    res.json({ success: true, id: result.insertId });
-  } catch (err) {
-    console.error("❌ Error al insertar:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
+        // Insertar nuevo registro
+        const insertSql = "INSERT INTO resultados1 (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)";
+        db.query(insertSql, [nombre, nuevoIntento, tiempo, errores], (err2, result2) => {
+            if (err2) {
+                console.error("❌ Error al guardar resultado:", err2);
+                return res.status(500).send("Error al guardar resultado");
+            }
+
+            res.send(`✅ Resultado guardado. Intento ${nuevoIntento}`);
+        });
+    });
 });
+
 
 // Consultar todos los resultados
 app.get('/resultados1', async (req, res) => {
