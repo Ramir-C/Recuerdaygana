@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // -------------------- RUTAS --------------------
 
 // Insertar un resultado en la BD
-app.post('/api/resultados', async (req, res) => {
+app.post('/resultados1', async (req, res) => {
   const { nombre, intento, tiempo, errores } = req.body;
 
   // Validación rápida
@@ -26,7 +26,7 @@ app.post('/api/resultados', async (req, res) => {
 
   try {
     const [result] = await pool.query(
-      `INSERT INTO resultados (nombre, intento, tiempo, errores) 
+      `INSERT INTO resultados1 (nombre, intento, tiempo, errores) 
        VALUES (?, ?, ?, ?)`,
       [nombre, intento, tiempo, errores]
     );
