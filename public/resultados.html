@@ -1,89 +1,85 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados del Juego</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-        table {
-            width: 90%;
-            margin: auto;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table, th, td {
-            border: 1px solid white;
-        }
-        th, td {
-            padding: 10px;
-        }
-        th {
-            background: #3498db;
-        }
-        tr:nth-child(even) {
-            background: #34495e;
-        }
-        a {
-            display: inline-block;
-            margin-top: 20px;
-            background: #2ecc71;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            color: white;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Resultados del Juego</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background: #333;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+  </style>
 </head>
 <body>
-    <h1>Resultados del Juego</h1>
-    <table>
-        <thead>
+  <h1>Resultados del Juego</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Intento</th>
+        <th>Tiempo (segundos)</th>
+        <th>Errores</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-resultados">
+      <!-- Aquí se insertan los resultados con JS -->
+    </tbody>
+  </table>
+
+  <script>
+    async function cargarResultados() {
+      try {
+        const response = await fetch('/api/resultados');
+        const resultados = await response.json();
+
+        const tbody = document.getElementById('tabla-resultados');
+        tbody.innerHTML = '';
+
+        resultados.forEach(r => {
+          const fila = `
             <tr>
-                <th>ID</th>
-                <th>Jugador</th>
-                <th>Intento</th>
-                <th>Tiempo (s)</th>
-                <th>Errores</th>
-                <th>Fecha</th>
+              <td>${r.id}</td>
+              <td>${r.nombre}</td>
+              <td>${r.intento}</td>
+              <td>${r.tiempo}</td>
+              <td>${r.errores}</td>
+              <td>${new Date(r.fecha).toLocaleString()}</td>
             </tr>
-        </thead>
-        <tbody id="tabla-resultados"></tbody>
-    </table>
-    <a href="index.html">Volver al juego</a>
+          `;
+          tbody.innerHTML += fila;
+        });
+      } catch (err) {
+        console.error("❌ Error al cargar resultados:", err);
+      }
+    }
 
-    <script>
-        async function cargarResultados() {
-            try {
-                const response = await fetch("/resultados");
-                const resultados = await response.json();
-
-                const tabla = document.getElementById("tabla-resultados");
-                tabla.innerHTML = "";
-
-                resultados.forEach(r => {
-                    const fila = `<tr>
-                        <td>${r.id}</td>
-                        <td>${r.nombre}</td>
-                        <td>${r.intento}</td>
-                        <td>${r.tiempo}</td>
-                        <td>${r.errores}</td>
-                        <td>${new Date(r.fecha).toLocaleString()}</td>
-                    </tr>`;
-                    tabla.innerHTML += fila;
-                });
-            } catch (error) {
-                console.error("❌ Error cargando resultados:", error);
-            }
-        }
-
-        cargarResultados();
-    </script>
+    // Ejecutar cuando cargue la página
+    window.onload = cargarResultados;
+  </script>
 </body>
 </html>
