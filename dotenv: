@@ -29,7 +29,7 @@ app.use(express.json());
 // Guardar resultados del juego
 app.post("resultados1", (req, res) => {
     const { nombre, intento, tiempo, errores } = req.body;
-    const sql = "INSERT INTO resultados (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)";
+    const sql = "INSERT INTO resultados1 (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)";
     db.query(sql, [nombre, intento, tiempo, errores], (err, result) => {
         if (err) {
             console.error(err);
@@ -41,7 +41,7 @@ app.post("resultados1", (req, res) => {
 
 // Ver resultados
 app.get("/resultados1", (req, res) => {
-    db.query("SELECT * FROM resultados ORDER BY fecha DESC", (err, results) => {
+    db.query("SELECT * FROM resultados1 ORDER BY fecha DESC", (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).send("Error al obtener resultados");
