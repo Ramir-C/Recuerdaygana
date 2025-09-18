@@ -29,7 +29,7 @@ db.connect((err) => {
 });
 
 // Ruta para guardar resultados
-app.post("/save", (req, res) => {
+app.post("/resultados1", (req, res) => {
   const { nombre, intento, tiempo, errores } = req.body;
   const sql = "INSERT INTO resultados (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)";
   db.query(sql, [nombre, intento, tiempo, errores], (err, result) => {
@@ -42,7 +42,7 @@ app.post("/save", (req, res) => {
 });
 
 // Ruta para obtener resultados
-app.get("/resultados", (req, res) => {
+app.get("/resultados1", (req, res) => {
   const sql = "SELECT * FROM resultados ORDER BY fecha DESC";
   db.query(sql, (err, rows) => {
     if (err) {
@@ -57,4 +57,5 @@ app.get("/resultados", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
 });
+
 
