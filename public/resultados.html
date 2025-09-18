@@ -7,111 +7,83 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #3498db;
+            background: #2c3e50;
             color: white;
-            margin: 0;
+            text-align: center;
             padding: 20px;
         }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
         table {
-            width: 100%;
-            border-collapse: collapse;
+            width: 90%;
             margin: auto;
-            background-color: white;
-            color: black;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
-
+        table, th, td {
+            border: 1px solid white;
+        }
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
+            padding: 10px;
         }
-
         th {
-            background-color: #2ecc71;
-            color: white;
+            background: #3498db;
         }
-
-        tr:nth-child(even){
-            background-color: #f2f2f2;
+        tr:nth-child(even) {
+            background: #34495e;
         }
-
-        tr:hover {
-            background-color: #ddd;
-        }
-
-        #refresh-button {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            background: #2ecc71;
+            padding: 10px 15px;
+            text-decoration: none;
             border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #refresh-button:hover {
-            background-color: #c0392b;
+            color: white;
         }
     </style>
 </head>
 <body>
     <h1>Resultados del Juego</h1>
-    <button id="refresh-button" onclick="loadResults()">Actualizar Resultados</button>
-    <table id="results-table">
+    <table>
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Nombre</th>
+                <th>Jugador</th>
                 <th>Intento</th>
                 <th>Tiempo (s)</th>
                 <th>Errores</th>
-                <th>Aciertos</th>
-                <th>Fecha y Hora</th>
+                <th>Fecha</th>
             </tr>
         </thead>
-        <tbody>
-            <!-- Los resultados se llenarán aquí dinámicamente -->
-        </tbody>
+        <tbody id="tabla-resultados"></tbody>
     </table>
+    <a href="index.html">Volver al juego</a>
 
     <script>
-        async function loadResults() {
+        async function cargarResultados() {
             try {
-                const response = await fetch('/users'); // Endpoint de tu servidor
-                if (!response.ok) throw new Error('Error al obtener los datos');
+                const response = await fetch("/resultados");
+                const resultados = await response.json();
 
-                const data = await response.json();
-                const tbody = document.querySelector('#results-table tbody');
-                tbody.innerHTML = ''; // Limpiar tabla
+                const tabla = document.getElementById("tabla-resultados");
+                tabla.innerHTML = "";
 
-                data.users.forEach(player => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${player.id}</td>
-                        <td>${player.nombre}</td>
-                        <td>${player.intento}</td>
-                        <td>${player.tiempo}</td>
-                        <td>${player.errores}</td>
-                        <td>${player.aciertos}</td>
-                        <td>${player.fecha_hora || player.fecha}</td>
-                    `;
-                    tbody.appendChild(tr);
+                resultados.forEach(r => {
+                    const fila = `<tr>
+                        <td>${r.id}</td>
+                        <td>${r.nombre}</td>
+                        <td>${r.intento}</td>
+                        <td>${r.tiempo}</td>
+                        <td>${r.errores}</td>
+                        <td>${new Date(r.fecha).toLocaleString()}</td>
+                    </tr>`;
+                    tabla.innerHTML += fila;
                 });
-            } catch (err) {
-                console.error('Error cargando resultados:', err);
-                alert('No se pudieron cargar los resultados.');
+            } catch (error) {
+                console.error("❌ Error cargando resultados:", error);
             }
         }
 
-        // Cargar resultados al iniciar
-        window.onload = loadResults;
+        cargarResultados();
     </script>
 </body>
 </html>
