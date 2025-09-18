@@ -313,25 +313,29 @@
             document.getElementById('result').style.display = 'none';
             startGame();
         }
-        function saveData(timeDiff) {
+       function saveData(timeDiff) {
     const gameData = {
         nombre: playerName,
-        intento: 1, 
+        intento: 1, // si quieres puedes hacerlo dinámico
         tiempo: timeDiff.toFixed(2),
         errores: incorrectCount
     };
 
-    fetch('/save', {
+    fetch('/api/resultados', { // 👈 CAMBIO AQUÍ
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify(gameData)
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log("✅ Datos guardados:", data);
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error al guardar los datos');
+        }
+        console.log('✅ Datos del juego guardados correctamente:', gameData);
     })
     .catch(error => {
-        console.error("❌ Error al guardar los datos:", error);
+        console.error('❌ Error al guardar los datos:', error);
     });
 }
 
