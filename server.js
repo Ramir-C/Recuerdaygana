@@ -12,9 +12,9 @@ app.use(express.static(path.join(__dirname, "public"))); // carpeta para el HTML
 
 // Configuración de conexión con Railway
 const db = mysql.createConnection({
-  host: process.env.MYSQLHOST || "containers-us-west-56.railway.app",
+  host: process.env.MYSQLHOST || "mysql.railway.internal",
   user: process.env.MYSQLUSER || "root",
-  password: process.env.MYSQLPASSWORD || "password",
+  password: process.env.MYSQLPASSWORD || "vJxrUwgbREPcAdNKbaRoEinrLYQydTfb",
   database: process.env.MYSQLDATABASE || "railway",
   port: process.env.MYSQLPORT || 3306,
 });
@@ -57,3 +57,4 @@ app.get("/resultados", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor escuchando en el puerto ${PORT}`);
 });
+
