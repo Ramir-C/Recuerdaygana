@@ -316,11 +316,10 @@
        function saveData(timeDiff) {
     const gameData = {
         nombre: playerName,
-        intento: 1, // si quieres puedes hacerlo dinámico
         tiempo: timeDiff.toFixed(2),
         errores: incorrectCount
     };
-
+      
     fetch('/resultados1', { // 👈 CAMBIO AQUÍ
         method: 'POST',
         headers: {
