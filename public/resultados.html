@@ -63,7 +63,7 @@
 </head>
 <body>
   <h1>Resultados del Juego</h1>
-  <button id="refresh-button" onclick="cargarResultados()">Actualizar Resultados</button>
+  <button id="refresh-button" onclick="cargarResultados()">Actualizar Resultados1</button>
   
   <table>
     <thead>
@@ -76,7 +76,7 @@
         <th>Fecha</th>
       </tr>
     </thead>
-    <tbody id="tabla-resultados">
+    <tbody id="tabla-resultados1">
       <!-- Aquí se insertan los resultados con JS -->
     </tbody>
   </table>
@@ -88,7 +88,7 @@
         if (!res.ok) throw new Error("Error al obtener resultados");
 
         const data = await res.json();
-        const tbody = document.getElementById("tabla-resultados");
+        const tbody = document.getElementById("tabla-resultados1");
         tbody.innerHTML = ""; // Limpiar tabla antes de llenarla
 
         data.forEach(row => {
@@ -110,7 +110,7 @@
     }
 
     // Cargar resultados al iniciar
-    window.onload = cargarResultados;
+    window.onload = cargarResultados1;
   </script>
 </body>
 </html>
