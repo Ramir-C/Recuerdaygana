@@ -316,25 +316,20 @@
        function saveData(timeDiff) {
     const gameData = {
         nombre: playerName,
+        intento: 1, // antes no hacíamos incremento automático
         tiempo: timeDiff.toFixed(2),
         errores: incorrectCount
     };
     
-fetch('/resultados1', { // 👈 USAR LA RUTA CORRECTA
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(gameData)
-})
-.then(response => response.json()) // parsea la respuesta JSON
-.then(data => {
-    console.log('✅ Datos del juego guardados correctamente:', data);
-})
-.catch(error => {
-    console.error('❌ Error al guardar los datos:', error);
-});
-
+    fetch('/resultados1', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(gameData)
+    })
+    .then(response => response.json())
+    .then(data => console.log('✅ Datos guardados:', data))
+    .catch(err => console.error('❌ Error guardando datos:', err));
+}
 
     </script>
 </body>
