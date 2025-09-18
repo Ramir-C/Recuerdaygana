@@ -27,7 +27,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
 // Guardar resultados del juego
-app.post("/save", (req, res) => {
+app.post("resultados1", (req, res) => {
     const { nombre, intento, tiempo, errores } = req.body;
     const sql = "INSERT INTO resultados (nombre, intento, tiempo, errores) VALUES (?, ?, ?, ?)";
     db.query(sql, [nombre, intento, tiempo, errores], (err, result) => {
