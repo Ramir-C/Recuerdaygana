@@ -82,35 +82,28 @@
   </table>
 
   <script>
-    async function cargarResultados() {
-      try {
-        const res = await fetch("/resultados1"); // Llama a la ruta del servidor
-        if (!res.ok) throw new Error("Error al obtener resultados");
-
+    async function cargarResultados1() {
+    try {
+        const res = await fetch('/resultados1');
         const data = await res.json();
-        const tbody = document.getElementById("tabla-resultados1");
-        tbody.innerHTML = ""; // Limpiar tabla antes de llenarla
-
-        data.forEach(row => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${row.id}</td>
-            <td>${row.nombre}</td>
-            <td>${row.intento}</td>
-            <td>${row.tiempo}</td>
-            <td>${row.errores}</td>
-            <td>${row.fecha}</td>
-          `;
-          tbody.appendChild(tr);
+        const tbody = document.getElementById('tabla-resultados1');
+        tbody.innerHTML = '';
+        data.forEach(r => {
+            tbody.innerHTML += `<tr>
+                <td>${r.id}</td>
+                <td>${r.nombre}</td>
+                <td>${r.intento}</td>
+                <td>${r.tiempo}</td>
+                <td>${r.errores}</td>
+                <td>${r.fecha}</td>
+            </tr>`;
         });
-      } catch (err) {
-        console.error("❌ Error cargando resultados:", err);
-        alert("Error al cargar los resultados.");
-      }
+    } catch (err) {
+        console.error(err);
     }
+}
+window.onload = cargarResultados1;
 
-    // Cargar resultados al iniciar
-    window.onload = cargarResultados1;
   </script>
 </body>
 </html>
