@@ -39,10 +39,10 @@ app.post('/resultados1', async (req, res) => {
 });
 
 // Consultar todos los resultados
-app.get('/api/resultados', async (req, res) => {
+app.get('/resultados1', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT * FROM resultados ORDER BY fecha DESC'
+      'SELECT * FROM resultados1 ORDER BY fecha DESC'
     );
     res.json(rows);
   } catch (err) {
