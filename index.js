@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Insertar un resultado en la BD
 // Guardar resultados del juego con cálculo automático del intento
-app.post("/save", (req, res) => {
+app.post("resultados1", (req, res) => {
     const { nombre, tiempo, errores } = req.body;
 
     // Verificar si ya existe el nombre
